@@ -5,7 +5,7 @@ let logs = [];
 let sentCount = 0;
 let dropCount = 0;
 
-// Initialize from storage
+
 chrome.storage.local.get(['isRunning', 'pingInterval', 'targetUrl', 'logs', 'sentCount', 'dropCount'], (result) => {
     if (result.isRunning !== undefined) isRunning = result.isRunning;
     if (result.pingInterval) pingInterval = result.pingInterval;
@@ -46,19 +46,19 @@ async function performPing() {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
 
-        const response = await fetch(targetUrl, { 
-            method: 'GET', 
-            signal: controller.signal 
+        const response = await fetch(targetUrl, {
+            method: 'GET',
+            signal: controller.signal
         });
-        
+
         const blob = await response.blob();
         clearTimeout(timeoutId);
         latency = Date.now() - startTime;
-        
+
         if (latency > 0) {
             mbps = ((blob.size * 8) / 1000000) / (latency / 1000);
         }
-        
+
         success = true;
         sentCount++;
         message = `Ping Success: ${targetUrl} (${latency}ms, ${mbps.toFixed(2)} Mbps)`;
@@ -84,8 +84,8 @@ async function performPing() {
 
     chrome.storage.local.set({ logs, sentCount, dropCount });
 
-    // Broadcast to popup if open (silent fail if not open)
-    chrome.runtime.sendMessage({ type: 'LOG_UPDATE', log: logEntry, sentCount, dropCount }).catch(() => {});
+
+    chrome.runtime.sendMessage({ type: 'LOG_UPDATE', log: logEntry, sentCount, dropCount }).catch(() => { });
 }
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
@@ -94,17 +94,31 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         chrome.storage.local.set({ isRunning });
         if (isRunning) {
             startPinger();
-            performPing(); // Run immediately on start
+            performPing();
+
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'Icons/icon128.png',
+                title: 'CYBER PINGER ⚡',
+                message: 'Connect Successful 🚀✅ !'
+            });
         } else {
             stopPinger();
+
+            chrome.notifications.create({
+                type: 'basic',
+                iconUrl: 'Icons/icon128.png',
+                title: 'CYBER PINGER ⚡',
+                message: 'Disconnected 🤚🛑!'
+            });
         }
         sendResponse({ status: 'ok' });
     } else if (message.type === 'UPDATE_SETTINGS') {
         targetUrl = message.targetUrl || targetUrl;
         pingInterval = message.pingInterval || pingInterval;
-        
+
         chrome.storage.local.set({ targetUrl, pingInterval });
-        
+
         if (isRunning) {
             stopPinger();
             startPinger();
