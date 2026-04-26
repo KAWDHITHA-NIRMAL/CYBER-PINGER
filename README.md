@@ -1,6 +1,6 @@
 <div align="center">
   <img src="Icons/icon128.png" alt="Cyber Pinger Logo" width="128" />
-  <h1>⚡ CYBER PINGER</h1>
+  <h1>CYBER PINGER ⚡</h1>
   <p><strong>The Ultimate Network Monitoring Extension for Hackers & Pros</strong></p>
   <img src="Icons/henagahana.gif" alt="Lightning Animation" width="180" style="mix-blend-mode: screen; border-radius: 10px;" />
 </div>
